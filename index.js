@@ -1,15 +1,10 @@
 require('dotenv').config();
 const { Client, GatewayIntentBits } = require("discord.js");
 const { joinVoiceChannel, createAudioPlayer, createAudioResource } = require("@discordjs/voice");
-const cors = require('cors');
 const express = require("express");
 const fs = require("fs");
 const { createClient } = require('@supabase/supabase-js');
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
-
-app.use(cors({
-    origin: '*', 
-}));
 
 const client = new Client({
     intents: [
