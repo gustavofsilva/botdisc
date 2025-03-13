@@ -22,7 +22,7 @@ app.use(require('cors')());
 app.use(express.json());
 
 const multer = require("multer");
-const storage = multer.memoryStorage(); 
+const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 app.post("/upload", upload.single("audio"), async (req, res) => {
@@ -36,7 +36,7 @@ app.post("/upload", upload.single("audio"), async (req, res) => {
     try {
         const { data, error } = await supabase
             .storage
-            .from('audios') // Nome do seu bucket no Supabase
+            .from('audios')
             .upload(`${req.file.originalname}`, req.file.buffer, {
                 contentType: req.file.mimetype,
             });
@@ -102,7 +102,7 @@ const keepAlive = (guildId) => {
             connection.receiver.speaking;
             console.log("Mantendo a conexão ativa...");
         }
-    }, 30 * 1000); 
+    }, 30 * 1000);
 };
 
 // Rota para tocar áudio
@@ -120,21 +120,20 @@ app.post("/play", async (req, res) => {
     try {
         const { channelId, connection } = connections[guildId];
 
-        // Obtendo a URL pública do Supabase
         const { data, error } = await supabase
             .storage
-            .from('audios')  // Nome do seu bucket
-            .getPublicUrl(audioFile.name);  // Nome do arquivo
+            .from('audios')
+            .getPublicUrl(audioFile.name);
 
         if (error) {
+            console.log("Erro ao acessar o áudio no Supabase:", error);
             return res.status(500).json({ error: "Erro ao acessar o áudio no Supabase.", details: error });
         }
 
         console.log("URL do áudio:", data.publicUrl);
 
-        // Criando o recurso de áudio com a URL pública
         const player = createAudioPlayer();
-        const resource = createAudioResource(data.publicUrl);  // Passando a URL pública
+        const resource = createAudioResource(data.publicUrl);  // Não é necessário o tipo aqui
 
         player.play(resource);
         connection.subscribe(player);
@@ -147,7 +146,6 @@ app.post("/play", async (req, res) => {
         res.status(500).json({ error: "Erro ao tocar o áudio." });
     }
 });
-
 
 
 const PORT = 3001;
