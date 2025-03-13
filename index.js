@@ -1,9 +1,11 @@
+require('dotenv').config();
 const { Client, GatewayIntentBits } = require("discord.js");
 const { joinVoiceChannel, createAudioPlayer, createAudioResource } = require("@discordjs/voice");
 const path = require("path");
 const express = require("express");
 const fs = require("fs");
-const multer = require("multer");
+const { createClient } = require('@supabase/supabase-js');
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
 const client = new Client({
     intents: [
@@ -15,43 +17,80 @@ const client = new Client({
 });
 
 const app = express();
-const upload = multer({ dest: "audios/" });
 
 app.use(require('cors')());
 app.use(express.json());
 
-// Rota para receber o arquivo de áudio
-app.post("/upload", upload.single("audio"), (req, res) => {
+const multer = require("multer");
+const storage = multer.memoryStorage(); 
+const upload = multer({ storage: storage });
+
+app.post("/upload", upload.single("audio"), async (req, res) => {
+    console.log("Arquivo recebido:", req.file);
+    console.log("Tipo de arquivo:", req.file.mimetype);
+
     if (!req.file) {
         return res.status(400).json({ message: "Nenhum arquivo foi enviado." });
     }
 
-    const shortTimestamp = Date.now().toString().slice(-6);
-    const newFileName = `${shortTimestamp}-${req.file.originalname}`;
-    const newFilePath = path.join(__dirname, "audios", newFileName);
+    try {
+        const { data, error } = await supabase
+            .storage
+            .from('audios') // Nome do seu bucket no Supabase
+            .upload(`${req.file.originalname}`, req.file.buffer, {
+                contentType: req.file.mimetype,
+            });
 
-    fs.rename(req.file.path, newFilePath, (err) => {
-        if (err) {
-            return res.status(500).json({ message: "Erro ao salvar o arquivo." });
+        if (error) {
+            console.error("Erro no upload:", error);
+            return res.status(500).json({ message: "Erro ao fazer upload do áudio." });
         }
 
-        res.json({ message: "Áudio enviado e salvo com sucesso!" });
-    });
+        console.log("Arquivo enviado com sucesso:", data);
+        res.status(200).json({ message: "Arquivo enviado com sucesso!", url: data?.Key });
+    } catch (err) {
+        console.error("Erro ao processar o arquivo:", err);
+        res.status(500).json({ message: "Erro ao processar o arquivo." });
+    }
 });
 
-// Rota para listar os áudios na pasta "audios"
-app.get("/audios", (req, res) => {
-    const audiosDir = path.join(__dirname, "audios");
+app.get("/audios", async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .storage
+            .from('audios')
+            .list('', {
+                sortBy: { column: 'name', order: 'asc' },
+            });
 
-    fs.readdir(audiosDir, (err, files) => {
-        if (err) {
-            return res.status(500).json({ error: "Erro ao ler os arquivos de áudio." });
+        if (error) {
+            return res.status(500).json({ error: "Erro ao listar os arquivos de áudio.", details: error });
         }
 
-        // Filtra os arquivos de áudio (.mp3 ou .wav)
-        const audioFiles = files.filter(file => file.endsWith('.mp3') || file.endsWith('.wav'));
-        res.json({ audios: audioFiles });
-    });
+        const audioFiles = data.filter(file =>
+            file.name.endsWith('.mp3') ||
+            file.name.endsWith('.wav') ||
+            file.name.endsWith('.ogg') ||
+            file.name.endsWith('.flac') ||
+            file.name.endsWith('.aac') ||
+            file.name.endsWith('.m4a') ||
+            file.name.endsWith('.wma') ||
+            file.name.endsWith('.alac') ||
+            file.name.endsWith('.opus')
+        );
+
+        const audioUrls = audioFiles.map(file => {
+            return {
+                name: file.name,
+                url: `${process.env.SUPABASE_URL}/storage/v1/object/public/audios/${file.name}`
+            };
+        });
+
+        res.json({ audios: audioUrls });
+    } catch (err) {
+        console.error("Erro ao listar arquivos:", err);
+        res.status(500).json({ error: "Erro inesperado ao buscar arquivos de áudio." });
+    }
 });
 
 const keepAlive = (guildId) => {
@@ -60,10 +99,10 @@ const keepAlive = (guildId) => {
             const { connection } = connections[guildId];
 
             // Envia uma ação qualquer para manter a conexão ativa
-            connection.receiver.speaking; // Isso apenas acessa o objeto, você pode fazer outras ações
+            connection.receiver.speaking;
             console.log("Mantendo a conexão ativa...");
         }
-    }, 30 * 1000); // Exemplo: checar a cada 30 segundos
+    }, 30 * 1000); 
 };
 
 // Rota para tocar áudio
@@ -81,16 +120,28 @@ app.post("/play", async (req, res) => {
     try {
         const { channelId, connection } = connections[guildId];
 
-        // Usando o channelId da conexão salva
+        // Obtendo a URL pública do Supabase
+        const { data, error } = await supabase
+            .storage
+            .from('audios')  // Nome do seu bucket
+            .getPublicUrl(audioFile.name);  // Nome do arquivo
+
+        if (error) {
+            return res.status(500).json({ error: "Erro ao acessar o áudio no Supabase.", details: error });
+        }
+
+        console.log("URL do áudio:", data.publicUrl);
+
+        // Criando o recurso de áudio com a URL pública
         const player = createAudioPlayer();
-        const resource = createAudioResource(path.join(__dirname, "audios", audioFile));
+        const resource = createAudioResource(data.publicUrl);  // Passando a URL pública
 
         player.play(resource);
         connection.subscribe(player);
 
         keepAlive(guildId);
 
-        res.json({ message: `Tocando ${audioFile} no servidor ${guildId} no canal ${channelId}` });
+        res.json({ message: `Tocando ${audioFile.name} no servidor ${guildId} no canal ${channelId}` });
     } catch (error) {
         console.error("Erro ao tocar o áudio:", error);
         res.status(500).json({ error: "Erro ao tocar o áudio." });
@@ -108,8 +159,7 @@ client.once("ready", () => {
     console.log("Bot está online!");
 });
 
-// Responde aos comandos do Discord
-const connections = {}; // Objeto para armazenar as conexões por guildId
+const connections = {};
 
 client.on("messageCreate", async (message) => {
     if (message.content === "a") {
@@ -117,15 +167,12 @@ client.on("messageCreate", async (message) => {
             return message.reply("Você precisa estar em um canal de voz!");
         }
 
-        // Obtém o guildId e o channelId
-        const guildId = message.guild.id; // Guild ID
-        const channelId = message.member.voice.channel.id; // Channel ID
+        const guildId = message.guild.id;
+        const channelId = message.member.voice.channel.id;
 
-        // Printando os valores
         console.log(`Bot está entrando no servidor: ${guildId}`);
         console.log(`Bot está entrando no canal de voz: ${channelId}`);
 
-        // Armazenando a conexão para uso posterior
         connections[guildId] = {
             channelId: channelId,
             connection: joinVoiceChannel({
@@ -134,9 +181,6 @@ client.on("messageCreate", async (message) => {
                 adapterCreator: message.guild.voiceAdapterCreator
             })
         };
-
-        // Aqui não precisamos tocar o áudio agora, apenas salvar as conexões
-        console.log(`Conexão salva para o servidor ${guildId} no canal ${channelId}`);
     }
 });
 
