@@ -23,22 +23,22 @@ app.use(express.json());
 // Rota para receber o arquivo de áudio
 app.post("/upload", upload.single("audio"), (req, res) => {
     if (!req.file) {
-      return res.status(400).json({ message: "Nenhum arquivo foi enviado." });
+        return res.status(400).json({ message: "Nenhum arquivo foi enviado." });
     }
-  
-    // Renomeia o arquivo para garantir que não haja conflitos
-    const newFileName = `${Date.now()}-${req.file.originalname}`;
+
+    const shortTimestamp = Date.now().toString().slice(-6);
+    const newFileName = `${shortTimestamp}-${req.file.originalname}`;
     const newFilePath = path.join(__dirname, "audios", newFileName);
-  
+
     fs.rename(req.file.path, newFilePath, (err) => {
-      if (err) {
-        return res.status(500).json({ message: "Erro ao salvar o arquivo." });
-      }
-  
-      res.json({ message: "Áudio enviado e salvo com sucesso!" });
+        if (err) {
+            return res.status(500).json({ message: "Erro ao salvar o arquivo." });
+        }
+
+        res.json({ message: "Áudio enviado e salvo com sucesso!" });
     });
-  });
-  
+});
+
 // Rota para listar os áudios na pasta "audios"
 app.get("/audios", (req, res) => {
     const audiosDir = path.join(__dirname, "audios");
@@ -56,15 +56,15 @@ app.get("/audios", (req, res) => {
 
 const keepAlive = (guildId) => {
     setInterval(() => {
-      if (connections[guildId]) {
-        const { connection } = connections[guildId];
-  
-        // Envia uma ação qualquer para manter a conexão ativa
-        connection.receiver.speaking; // Isso apenas acessa o objeto, você pode fazer outras ações
-        console.log("Mantendo a conexão ativa...");
-      }
+        if (connections[guildId]) {
+            const { connection } = connections[guildId];
+
+            // Envia uma ação qualquer para manter a conexão ativa
+            connection.receiver.speaking; // Isso apenas acessa o objeto, você pode fazer outras ações
+            console.log("Mantendo a conexão ativa...");
+        }
     }, 30 * 1000); // Exemplo: checar a cada 30 segundos
-  };
+};
 
 // Rota para tocar áudio
 app.post("/play", async (req, res) => {
