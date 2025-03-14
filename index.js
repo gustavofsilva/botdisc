@@ -121,11 +121,14 @@ app.post("/play", async (req, res) => {
         const { channelId, connection } = connections[guildId];
 
         const player = createAudioPlayer();
-        const resource = createAudioResource(url);  // Usando a URL diretamente aqui
+        const resource = createAudioResource(url);  
 
         player.play(resource);
         connection.subscribe(player);
 
+        keepAlive(guildId);
+
+        console.log(`Tocando ${name} no servidor ${guildId} no canal ${channelId}`);
         res.json({ message: `Tocando ${name} no servidor ${guildId} no canal ${channelId}` });
     } catch (error) {
         console.error("Erro ao tocar o áudio:", error);
