@@ -97,7 +97,6 @@ const keepAlive = (guildId) => {
         if (connections[guildId]) {
             const { connection } = connections[guildId];
 
-            // Envia uma ação qualquer para manter a conexão ativa
             connection.receiver.speaking;
             console.log("Mantendo a conexão ativa...");
         }
