@@ -133,8 +133,8 @@ app.post("/play", async (req, res) => {
         const player = createAudioPlayer();
         console.log(JSON.stringify(player));
         const resource = createAudioResource(url);
-        console.log(JSON.stringify(resource));
-        
+        console.log(resource);
+
         player.play(resource);
         connection.subscribe(player);
 
