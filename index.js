@@ -2,6 +2,7 @@ require('dotenv').config();
 const { Client, GatewayIntentBits } = require("discord.js");
 const { joinVoiceChannel, createAudioPlayer, createAudioResource } = require("@discordjs/voice");
 const express = require("express");
+const cors = require('cors');
 const fs = require("fs");
 const { createClient } = require('@supabase/supabase-js');
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
@@ -16,8 +17,12 @@ const client = new Client({
 });
 
 const app = express();
+app.use(cors());
 
-app.use(require('cors')());
+// Exemplo de rota
+app.get("/", (req, res) => {
+    res.send("API funcionando!");
+});
 app.use(express.json());
 
 const multer = require("multer");
@@ -92,15 +97,21 @@ app.get("/audios", async (req, res) => {
     }
 });
 
+const keepAliveIntervals = {};
+
 const keepAlive = (guildId) => {
-    setInterval(() => {
+    if (keepAliveIntervals[guildId]) {
+        console.log(`Já existe um keepAlive ativo para o guildId ${guildId}`);
+        return;
+    }
+
+    keepAliveIntervals[guildId] = setInterval(() => {
         if (connections[guildId]) {
             const { connection } = connections[guildId];
-
             connection.receiver.speaking;
             console.log("Mantendo a conexão ativa...");
         }
-    }, 30 * 1000);
+    }, 30 * 1000);  // 30 segundos
 };
 
 // Rota para tocar áudio
@@ -120,7 +131,7 @@ app.post("/play", async (req, res) => {
         const { channelId, connection } = connections[guildId];
 
         const player = createAudioPlayer();
-        const resource = createAudioResource(url);  
+        const resource = createAudioResource(url);
 
         player.play(resource);
         connection.subscribe(player);
