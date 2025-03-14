@@ -26,7 +26,7 @@ app.get("/", (req, res) => {
 app.use(express.json());
 
 const multer = require("multer");
-const { request } = require('https');
+const https = require('https');
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
@@ -137,14 +137,10 @@ app.post("/play", async (req, res) => {
         connection.subscribe(player);
         //player.play(resource);
 
-        request.get(url, (err, response) => {
-            if (err) {
-
-                console.error("Erro ao tocar o áudio:", err);
-                return res.status(500).json({ error: "Erro ao tocar o áudio." });
-            } else {
-                console.log(JSON.stringify(response));
-            }
+        https.get(url, (response) => {
+            console.log(response);
+        }).on('error', (error) => {
+            console.error("Erro ao tocar o áudio:", error);
         });
         
         keepAlive(guildId);
