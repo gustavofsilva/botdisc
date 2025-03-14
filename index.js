@@ -19,7 +19,6 @@ const client = new Client({
 const app = express();
 app.use(cors());
 
-// Exemplo de rota
 app.get("/", (req, res) => {
     res.send("API funcionando!");
 });
@@ -115,10 +114,8 @@ const keepAlive = (guildId) => {
     }, 30 * 1000);  // 30 segundos
 };
 
-// Rota para tocar áudio
-const { Readable } = require("stream");
-
 app.post("/play", async (req, res) => {
+    const { Readable } = require("stream");
     const { audioFile } = req.body;
     const guildId = Object.keys(connections)[0];
 
@@ -136,7 +133,6 @@ app.post("/play", async (req, res) => {
         const player = createAudioPlayer();
         connection.subscribe(player);
 
-        // Fazer o download do áudio e convertê-lo em um stream
         https.get(url, (response) => {
             if (response.statusCode !== 200) {
                 console.error(`Erro: Status ${response.statusCode}`);
@@ -150,13 +146,10 @@ app.post("/play", async (req, res) => {
             });
 
             response.on("end", () => {
-                // Criar um buffer único com todos os chunks
                 const audioBuffer = Buffer.concat(data);
 
-                // Criar um stream legível a partir do buffer
                 const audioStream = Readable.from(audioBuffer);
 
-                // Criar o recurso de áudio
                 const resource = createAudioResource(audioStream);
                 player.play(resource);
 
