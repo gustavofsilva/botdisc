@@ -110,6 +110,7 @@ app.post("/play", async (req, res) => {
     const guildId = Object.keys(connections)[0];
 
     if (!connections[guildId]) {
+        console.error(`Nenhuma conexão ativa para este guildId: ${guildId}`);
         return res.status(400).json({ error: "Nenhuma conexão ativa para este guildId." });
     }
 
@@ -120,8 +121,29 @@ app.post("/play", async (req, res) => {
 
         const { channelId, connection } = connections[guildId];
 
+        if (!connection) {
+            console.error(`Conexão não encontrada para o guildId: ${guildId}`);
+            return res.status(400).json({ error: "Conexão não encontrada." });
+        }
+
+        console.log(`Conexão encontrada para o guildId: ${guildId}, no canal: ${channelId}`);
+
         const player = createAudioPlayer();
-        const resource = createAudioResource(url);  
+
+        // Verifica se a URL do áudio é válida
+        if (!url || !url.startsWith('http')) {
+            console.error("A URL do áudio não é válida:", url);
+            return res.status(400).json({ error: "A URL do áudio não é válida." });
+        }
+
+        console.log("Criando recurso de áudio com a URL:", url);
+
+        const resource = createAudioResource(url);
+
+        resource.on('error', (error) => {
+            console.error("Erro ao criar o recurso de áudio:", error);
+            res.status(500).json({ error: "Erro ao criar o recurso de áudio." });
+        });
 
         player.play(resource);
         connection.subscribe(player);
@@ -132,9 +154,10 @@ app.post("/play", async (req, res) => {
         res.json({ message: `Tocando ${name} no servidor ${guildId} no canal ${channelId}` });
     } catch (error) {
         console.error("Erro ao tocar o áudio:", error);
-        res.status(500).json({ error: "Erro ao tocar o áudio." });
+        res.status(500).json({ error: "Erro ao tocar o áudio.", details: error });
     }
 });
+
 
 const PORT = 3001;
 app.listen(PORT, () => {
