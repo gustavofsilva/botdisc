@@ -134,7 +134,8 @@ app.post("/play", async (req, res) => {
         console.log(JSON.stringify(player));
         const resource = createAudioResource(url);
         console.log(resource);
-
+        console.log(JSON.stringify(resource.playStream._events.error));
+        
         player.play(resource);
         connection.subscribe(player);
 
