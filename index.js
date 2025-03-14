@@ -136,8 +136,8 @@ app.post("/play", async (req, res) => {
         console.log(resource);
         console.log(JSON.stringify(resource.playStream._events.error));
         
-        player.play(resource);
         connection.subscribe(player);
+        player.play(resource);
 
         keepAlive(guildId);
 
