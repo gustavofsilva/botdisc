@@ -131,8 +131,10 @@ app.post("/play", async (req, res) => {
         const { channelId, connection } = connections[guildId];
 
         const player = createAudioPlayer();
+        console.log(JSON.stringify(player));
         const resource = createAudioResource(url);
-
+        console.log(JSON.stringify(resource));
+        
         player.play(resource);
         connection.subscribe(player);
 
