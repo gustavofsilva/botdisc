@@ -19,6 +19,7 @@ const client = new Client({
 const app = express();
 app.use(cors());
 
+// Exemplo de rota
 app.get("/", (req, res) => {
     res.send("API funcionando!");
 });
@@ -28,6 +29,7 @@ const multer = require("multer");
 const https = require('https');
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
+const { Readable } = require("stream");
 
 app.post("/upload", upload.single("audio"), async (req, res) => {
     console.log("Arquivo recebido:", req.file);
@@ -115,7 +117,6 @@ const keepAlive = (guildId) => {
 };
 
 app.post("/play", async (req, res) => {
-    const { Readable } = require("stream");
     const { audioFile } = req.body;
     const guildId = Object.keys(connections)[0];
 
@@ -205,5 +206,32 @@ client.on("messageCreate", async (message) => {
     }
 });
 
+client.on("disconnect", () => {
+    console.log("🚨 O bot foi desconectado do Discord!");
+    stopBotActions();
+});
+
+client.on("shardDisconnect", (event, id) => {
+    console.log(`🚨 O shard ${id} foi desconectado!`);
+    stopBotActions();
+});
+
+// Função para parar ações do bot
+function stopBotActions() {
+    for (const guildId in connections) {
+        if (connections[guildId]) {
+            const { connection } = connections[guildId];
+
+            // Parar o áudio
+            if (connection) {
+                connection.destroy();
+            }
+
+            // Remover a conexão da memória
+            delete connections[guildId];
+        }
+    }
+    console.log("✅ Todas as conexões e ações do bot foram encerradas.");
+}
 
 client.login("MTM0OTQ1OTMwMzEyNzMxODYzNA.G82_tt.iCj-zYQWT1s4QxgM1BBsbOiBrRH5zBZedhRyw8");
