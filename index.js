@@ -124,16 +124,17 @@ app.post("/play", async (req, res) => {
     const { audioFile } = req.body;
     const guildId = Object.keys(connections)[0];
 
-    if (!connections[guildId]) {
-        return res.status(400).json({ error: "Nenhuma conexão ativa para este guildId." });
+    if (!lastGuildId || !connections[lastGuildId]) {
+        return res.status(400).json({ error: "Nenhuma conexão ativa para tocar o áudio." });
     }
+
 
     try {
         const { url, name } = audioFile;
 
         console.log("URL do áudio:", url);
 
-        const { channelId, connection } = connections[guildId];
+        const { channelId, connection } = connections[lastGuildId];
 
         const player = createAudioPlayer();
         connection.subscribe(player);
@@ -187,6 +188,8 @@ client.once("ready", () => {
 
 const connections = {};
 
+let lastGuildId = null;
+
 client.on("messageCreate", async (message) => {
     if (message.content === "a") {
         if (!message.member.voice.channel) {
@@ -207,6 +210,8 @@ client.on("messageCreate", async (message) => {
                 adapterCreator: message.guild.voiceAdapterCreator
             })
         };
+
+        lastGuildId = guildId;
     }
 });
 
