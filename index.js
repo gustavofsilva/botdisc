@@ -107,45 +107,31 @@ const keepAlive = (guildId) => {
 // Rota para tocar áudio
 app.post("/play", async (req, res) => {
     const { audioFile } = req.body;
-
-    console.log("Áudio recebido: ", audioFile);
-
     const guildId = Object.keys(connections)[0];
 
     if (!connections[guildId]) {
-        return res.status(400).json({ error: "Não foi encontrada uma conexão ativa para este guildId." });
+        return res.status(400).json({ error: "Nenhuma conexão ativa para este guildId." });
     }
 
     try {
+        const { url, name } = audioFile;
+
+        console.log("URL do áudio:", url);
+
         const { channelId, connection } = connections[guildId];
 
-        const { data, error } = await supabase
-            .storage
-            .from('audios')
-            .getPublicUrl(audioFile.name);
-
-        if (error) {
-            console.log("Erro ao acessar o áudio no Supabase:", error);
-            return res.status(500).json({ error: "Erro ao acessar o áudio no Supabase.", details: error });
-        }
-
-        console.log("URL do áudio:", data.publicUrl);
-
         const player = createAudioPlayer();
-        const resource = createAudioResource(data.publicUrl);  // Não é necessário o tipo aqui
+        const resource = createAudioResource(url);  // Usando a URL diretamente aqui
 
         player.play(resource);
         connection.subscribe(player);
 
-        keepAlive(guildId);
-
-        res.json({ message: `Tocando ${audioFile.name} no servidor ${guildId} no canal ${channelId}` });
+        res.json({ message: `Tocando ${name} no servidor ${guildId} no canal ${channelId}` });
     } catch (error) {
         console.error("Erro ao tocar o áudio:", error);
         res.status(500).json({ error: "Erro ao tocar o áudio." });
     }
 });
-
 
 const PORT = 3001;
 app.listen(PORT, () => {
