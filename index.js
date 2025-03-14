@@ -116,6 +116,8 @@ const keepAlive = (guildId) => {
 };
 
 // Rota para tocar áudio
+const { Readable } = require("stream");
+
 app.post("/play", async (req, res) => {
     const { audioFile } = req.body;
     const guildId = Object.keys(connections)[0];
@@ -132,26 +134,49 @@ app.post("/play", async (req, res) => {
         const { channelId, connection } = connections[guildId];
 
         const player = createAudioPlayer();
-        const resource = createAudioResource(url);
-        
         connection.subscribe(player);
-        //player.play(resource);
 
+        // Fazer o download do áudio e convertê-lo em um stream
         https.get(url, (response) => {
-            console.log(response);
-        }).on('error', (error) => {
+            if (response.statusCode !== 200) {
+                console.error(`Erro: Status ${response.statusCode}`);
+                return res.status(500).json({ error: "Erro ao baixar o áudio." });
+            }
+
+            let data = [];
+
+            response.on("data", (chunk) => {
+                data.push(chunk);
+            });
+
+            response.on("end", () => {
+                // Criar um buffer único com todos os chunks
+                const audioBuffer = Buffer.concat(data);
+
+                // Criar um stream legível a partir do buffer
+                const audioStream = Readable.from(audioBuffer);
+
+                // Criar o recurso de áudio
+                const resource = createAudioResource(audioStream);
+                player.play(resource);
+
+                console.log(`Tocando ${name} no servidor ${guildId} no canal ${channelId}`);
+            });
+
+        }).on("error", (error) => {
             console.error("Erro ao tocar o áudio:", error);
+            return res.status(500).json({ error: "Erro ao tocar o áudio." });
         });
-        
+
         keepAlive(guildId);
 
-        console.log(`Tocando ${name} no servidor ${guildId} no canal ${channelId}`);
         res.json({ message: `Tocando ${name} no servidor ${guildId} no canal ${channelId}` });
     } catch (error) {
         console.error("Erro ao tocar o áudio:", error);
         res.status(500).json({ error: "Erro ao tocar o áudio." });
     }
 });
+
 
 const PORT = 3001;
 app.listen(PORT, () => {
