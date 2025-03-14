@@ -107,11 +107,15 @@ const keepAlive = (guildId) => {
         return;
     }
 
+    console.log(`🔄 Iniciando Keep Alive para o guildId ${guildId}`);
+
     keepAliveIntervals[guildId] = setInterval(() => {
         if (connections[guildId]) {
-            const { connection } = connections[guildId];
-            connection.receiver.speaking;
-            console.log("Mantendo a conexão ativa...");
+            console.log(`Mantendo a conexão ativa para ${guildId}...`);
+        } else {
+            clearInterval(keepAliveIntervals[guildId]); // Para o intervalo
+            delete keepAliveIntervals[guildId]; // Remove da memória
+            console.log(`🛑 Keep Alive encerrado para ${guildId}`);
         }
     }, 30 * 1000);  // 30 segundos
 };
