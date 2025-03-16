@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "earnest-vent-233202",
+  "private_key_id": "180a33ac5c51dd23cb48857f95e77c1933a6c496",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDuYMcFj0FjMFpy\n498JcX+wiBFLn00nO71lwCJyR5FV9iRwVtzXDKjAKILQVGjaHjPeDernLzMnZXi8\nM89Y9Xxyv2A3eAR6dNstLHbqJMIys4uaVBS8vW3Y+yRCgxp7tBs4m74hfqAPVLKA\neSm3QpwLuFrffDgm3t2IHTllsdYyKnhYsiHciJVxN1+72DfUIw4sZ89WyuTE+BFp\nKQ8ctSSt8trRYKwLp2iqVzq77/55C6k5IsmeMOyzS0abCy/AeOQ8ZRiWUB9hW07J\nrB4fIXEb01Qbjg9N44QaOJ1pVWaHVytkxe6iDxh30Dc9NkGR+MnHItw6R/lXeGbW\nPaVGpWcPAgMBAAECggEAbUYS5dMKM+h2BgW8d+0+DhQJ7aMccJg7lbmycLWrA39e\nq9q9yJ0GfHP1p3+SQy6mMywpGwoxhmVHJ+sOKWb7QfTFrBfJ4cLQuFASQPpRxYE1\nxSy3BuBFSzqxIAZObReehOAsE9mikPSQEUG5pEcWFm9PxPQCH5t5bQyMg7g2iu63\neHjoZAiz+bDmLWbwV94epdIvF6ZhbIyvnXloDnWG7pArnRtRx+Ffb5XTrjFwnBaR\nvtfGCLgnArwZG5KEH2LJMlqTw9jxDDHjefj+1sgVfqBx1OJI+BC9GdM+UV7isYE5\nPMXXZhaxxgmxAB9zAU6XG5XlfTy/hKb3BgMo9zBXwQKBgQD/ehb35BlfJEMIg/rS\nBgSuBO9IOtH5ptJ6ik11+qVpnxdMxy23UsEr6JAtu40kwd1cBxi2tLkTjQz/CYgv\n2KfA7f4XUNZSw+vYkOj5gtX/hjVx3lc4vrHmkpS7ajz+k0cEfqfnO/m3/imJjzTJ\nojF5XGFDKT0gSQNyUaSFTx+kTwKBgQDu3bmmYaDrukmeS7bQyXdjeUWoFW2hFwN7\nSS1qMMkU88sRpxJgOHUDPAnSNXoRfKnxNHanIGlivSh83ygJqt+oTg8mVdOJnqIX\n+2WK9heoWmG3KU2ka+jl0tzo/c+nvpWY26cLiVOfIDQl6Xr1lJiTY2x1BCf9CLn4\nu18KNYmhQQKBgQCd3qIm2QtcoZnSv0vVUOa/akk7By4N6aqTEre/Of3RgP/y7/ou\nGLNKINJHkGgt2KajYbdB3/emPzlSuF8xwd4X+HlVixyF1I//Kbztwo3e8t4/2Tdo\n114zr0y9a275maT/AA1ddNBhhGvCl331Q4bzCcUIrYkaVEQO9qiFwFk7PQKBgQDY\nxYlccA8MvjNfH5EZ6yuYr47CWifyYCM9uAwp6XoitJhePcOUZMf0FoFHLlbIFd1X\n02e2hdh9zfI3WIFKPLLaV3SyMoNVyguKPhBJyslvdA5nnWkjxPZH01O9cdEIhxHV\n9cij1I15xEzu9vMqeR756umbTBlKLagwDULTzgBHwQKBgEBV7za+sWiNfeFsfcVT\n22UqY8YHsgGMj1nH7arPHV97pXonTZVhBe1D6qzsjXipTn86jP9TTv3r5LdBEMg6\nBOF+jdJY36QQxcVKtTdOOUuyqSsB77Ft8tYGjZZEIIo0HExSo3m9MQypuelZr9BT\nFiMZ319jNXF0aw5UZThM14qE\n-----END PRIVATE KEY-----\n",
+  "client_email": "gdrive@earnest-vent-233202.iam.gserviceaccount.com",
+  "client_id": "116099490781763385808",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/gdrive%40earnest-vent-233202.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
