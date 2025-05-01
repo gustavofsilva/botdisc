@@ -53,18 +53,16 @@ app.get("/images", async (req, res) => {
         let files = [];
         let pageToken = null;
 
-        // Enquanto houver mais resultados para buscar
         do {
             const response = await drive.files.list({
-                q: "mimeType contains 'image/'", // Filtra apenas arquivos de imagem
-                fields: "files(id, name), nextPageToken", // Obtém o id, nome e o token da próxima página, se houver
-                pageToken: pageToken, // Passa o token da próxima página, se houver
+                q: "mimeType contains 'image/'", 
+                fields: "files(id, name), nextPageToken", 
+                pageToken: pageToken, 
             });
 
-            // Para cada arquivo, baixar a imagem e salvar no servidor
             for (const file of response.data.files) {
                 const fileUrl = `https://drive.google.com/uc?id=${file.id}&export=download`;
-                const fileName = encodeURIComponent(file.name);  // Garante que o nome seja válido para o sistema de arquivos
+                const fileName = encodeURIComponent(file.name); 
                 console.log("Baixando a imagem:", fileName);
 
                 const savePath = path.join(__dirname, 'images', fileName);
@@ -120,40 +118,35 @@ app.post('/uploadImagem', upload.single('image'), async (req, res) => {
     }
 
     try {
-        // Criação de um arquivo no Google Drive
         const fileMetadata = {
-            name: req.file.originalname,  // Nome original do arquivo
-            mimeType: req.file.mimetype,  // Tipo MIME da imagem
+            name: req.file.originalname,  
+            mimeType: req.file.mimetype, 
         };
 
-        // Converter o Buffer para um stream
         const bufferStream = new stream.PassThrough();
         bufferStream.end(req.file.buffer);
 
         const media = {
             mimeType: req.file.mimetype,
-            body: bufferStream,  // Enviar o stream para o Google Drive
+            body: bufferStream, 
         };
 
-        // Enviar para o Google Drive
         const response = await drive.files.create({
             resource: fileMetadata,
             media: media,
-            fields: 'id',  // Apenas o id do arquivo
+            fields: 'id', 
         });
 
         const fileId = response.data.id;
 
-        // Tornar o arquivo público (permite acesso por qualquer pessoa com o link)
         await drive.permissions.create({
             fileId: fileId,
             resource: {
                 type: 'anyone',
-                role: 'reader',  // Permissão de leitura pública
+                role: 'reader', 
             },
         });
 
-        // Gerar a URL pública do arquivo
         const fileUrl = `https://drive.google.com/uc?id=${fileId}`;
 
         res.json({ success: true, message: 'Imagem enviada com sucesso!', fileUrl });
@@ -162,15 +155,6 @@ app.post('/uploadImagem', upload.single('image'), async (req, res) => {
         res.status(500).json({ success: false, message: 'Erro ao enviar imagem para o Google Drive.', error: error.message });
     }
 });
-
-
-
-
-
-
-
-
-
 
 
 app.post("/upload", upload.single("audio"), async (req, res) => {
@@ -255,11 +239,11 @@ const keepAlive = (guildId) => {
         if (connections[guildId]) {
             console.log(`Mantendo a conexão ativa para ${guildId}...`);
         } else {
-            clearInterval(keepAliveIntervals[guildId]); // Para o intervalo
-            delete keepAliveIntervals[guildId]; // Remove da memória
+            clearInterval(keepAliveIntervals[guildId]); 
+            delete keepAliveIntervals[guildId]; 
             console.log(`🛑 Keep Alive encerrado para ${guildId}`);
         }
-    }, 30 * 1000);  // 30 segundos
+    }, 30 * 1000);
 };
 
 app.post("/play", async (req, res) => {
@@ -381,4 +365,4 @@ function stopBotActions() {
     console.log("✅ Todas as conexões e ações do bot foram encerradas.");
 }
 
-client.login("MTM0OTQ1OTMwMzEyNzMxODYzNA.G82_tt.iCj-zYQWT1s4QxgM1BBsbOiBrRH5zBZedhRyw8");
+client.login("MTM0OTQ1OTMwMzEyNzMxODYzNA.GmlKjs.hT-TAQyBni7qEO84Ys08EeitsxkLNt56xBeolY");
